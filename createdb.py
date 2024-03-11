@@ -1,22 +1,23 @@
 import sqlite3
 import hashlib
+import uuid
 
 conn=sqlite3.connect("store.db")
 
 cur=conn.cursor()
 
 #tabla users
-cur.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT,adress TEXT,rol INTEGER)")
+cur.execute("CREATE TABLE IF NOT EXISTS users (id TEXT,username TEXT, password TEXT,adress TEXT,rol INTEGER)")
 conn.commit()
 users=[
-    ("admin",hashlib.sha256(b"asix2023").hexdigest(),"Rambla Catalunya 82 bajos",0),
-    ("carlos",hashlib.sha256(b"12345").hexdigest(),"Carretera de Sants 12 3o 1a",1),
-    ("julia", hashlib.sha256(b"pass6789").hexdigest(), "Avenida Diagonal 401 2o 2a",1),
-    ("marc", hashlib.sha256(b"marc2024").hexdigest(), "Gran Via 555 5o 3a",1),
-    ("lucia", hashlib.sha256(b"mypassword").hexdigest(), "Passeig de Gracia 60 1o 1a",1),
+    (str(uuid.uuid4()),"admin",hashlib.sha256(b"asix2023").hexdigest(),"Rambla Catalunya 82 bajos",0),
+    (str(uuid.uuid4()),"carlos",hashlib.sha256(b"12345").hexdigest(),"Carretera de Sants 12 3o 1a",1),
+    (str(uuid.uuid4()),"julia", hashlib.sha256(b"pass6789").hexdigest(), "Avenida Diagonal 401 2o 2a",1),
+    (str(uuid.uuid4()),"marc", hashlib.sha256(b"marc2024").hexdigest(), "Gran Via 555 5o 3a",1),
+    (str(uuid.uuid4()),"lucia", hashlib.sha256(b"mypassword").hexdigest(), "Passeig de Gracia 60 1o 1a",1),
 ]
 for e in users:
-    cur.execute("INSERT INTO users (username,password,adress,rol) VALUES (?,?,?,?)",e)
+    cur.execute("INSERT INTO users (id,username,password,adress,rol) VALUES (?,?,?,?,?)",e)
 conn.commit()
 
 #tabla products

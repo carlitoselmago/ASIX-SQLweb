@@ -28,7 +28,7 @@ def login():
 
         # " OR "1"="1
         # " OR "1"="1"; DROP TABLE users;
-        SQL=f'SELECT rowid,username, password FROM users WHERE username="{username}" AND password="{password}"'
+        SQL=f'SELECT id,username, password FROM users WHERE username="{username}" AND password="{password}"'
         print(SQL)
         try:
             res=cur.execute(SQL).fetchone()
@@ -77,16 +77,17 @@ def register():
     else:
         return render_template("register.html")
 
-@app.route("/user/<int:userid>")
+@app.route("/user/<string:userid>")
 def user(userid):
+    print("userid from url",userid)
     # get user data
     conn=sqlite3.connect("store.db")
     cur=conn.cursor()
-    SQL=f'SELECT username, adress FROM users WHERE rowid='+str(userid)
+    SQL=f'SELECT username, adress FROM users WHERE id="{userid}"'
     userdata=cur.execute(SQL).fetchone()
 
     #get products
-    SQL=f'SELECT name,price,image FROM purchases INNER JOIN products ON purchases.product_id=products.rowid WHERE purchases.username_id={userid}'
+    SQL=f'SELECT name,price,image FROM purchases INNER JOIN products ON purchases.product_id=products.rowid WHERE purchases.username_id="{userid}"'
     prod=cur.execute(SQL).fetchall()
     print("products",prod)
     return render_template("user.html", userdata={"username":userdata[0],"adress":userdata[1],"products":prod})
