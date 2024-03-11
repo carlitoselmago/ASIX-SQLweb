@@ -1,18 +1,19 @@
 import sqlite3
+import hashlib
 
 conn=sqlite3.connect("store.db")
 
 cur=conn.cursor()
 
 #tabla users
-cur.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT,adress TEXT,rol TEXT)")
+cur.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT,adress TEXT,rol INTEGER)")
 conn.commit()
 users=[
-    ("admin","asix2023","Rambla Catalunya 82 bajos","admin"),
-    ("carlos","12345","Carretera de Sants 12 3o 1a","customer"),
-    ("julia", "pass6789", "Avenida Diagonal 401 2o 2a","customer"),
-    ("marc", "marc2024", "Gran Via 555 5o 3a","customer"),
-    ("lucia", "mypassword", "Passeig de Gracia 60 1o 1a","customer"),
+    ("admin",hashlib.sha256(b"asix2023").hexdigest(),"Rambla Catalunya 82 bajos",0),
+    ("carlos",hashlib.sha256(b"12345").hexdigest(),"Carretera de Sants 12 3o 1a",1),
+    ("julia", hashlib.sha256(b"pass6789").hexdigest(), "Avenida Diagonal 401 2o 2a",1),
+    ("marc", hashlib.sha256(b"marc2024").hexdigest(), "Gran Via 555 5o 3a",1),
+    ("lucia", hashlib.sha256(b"mypassword").hexdigest(), "Passeig de Gracia 60 1o 1a",1),
 ]
 for e in users:
     cur.execute("INSERT INTO users (username,password,adress,rol) VALUES (?,?,?,?)",e)
