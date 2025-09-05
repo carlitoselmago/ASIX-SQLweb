@@ -1,7 +1,9 @@
 import sqlite3
 from flask import Flask, render_template,url_for,redirect,request
 import sqlite3
-
+import hashlib
+from createdb import cipher_suite
+import uuid
 
 
 app = Flask(__name__)
@@ -23,9 +25,12 @@ def login():
         cur=conn.cursor()
         username=request.form.get('username')
         password=request.form.get('password')
+
+        password=hashlib.sha256(bytes(password,'utf-8')).hexdigest()
+
         # " OR "1"="1
         # " OR "1"="1"; DROP TABLE users;
-        SQL=f'SELECT rowid,username, password FROM users WHERE username="{username}" AND password="{password}"'
+        SQL=f'SELECT id,username, password FROM users WHERE username="{username}" AND password="{password}"'
         print(SQL)
         #print(username,password)
         
@@ -38,7 +43,7 @@ def login():
            #print("USER", res[0])
            logged=True
         else:
-            return render_template("login.html",errors="El usuario no existe o la contraseña no coincide ")
+            return render_template("login.html",errors="Ha habido un error ")
     if logged:
        return redirect('user/'+str(res[0]))
     else:
@@ -52,15 +57,32 @@ def register():
         cur=conn.cursor()
         print(request.form)
         SQL='INSERT INTO users VALUES ('
+        #insertar uuid
+        uid=str(uuid.uuid4())
+        SQL+='"'+uid+'",'
         for field in list(request.form):
-            SQL+=f'"{request.form[field]}", '
+
+            campo=field
+            valor=request.form[field]
+
+            if campo=="password":
+                valor=hashlib.sha256(bytes(valor,'utf-8')).hexdigest()
+
+            if campo=="adress":
+                #aplicar lógica para adress
+                print("adress valor",valor)
+                valor=cipher_suite.encrypt(bytes(valor,'utf-8')).decode()
+
+            SQL+=f'"{valor}", '
+
         SQL=SQL.rstrip(', ')
+        
         SQL+=')'
         print("create user",SQL)
         try:
             cur.execute(SQL)
             conn.commit()
-            newuserid=cur.lastrowid
+            newuserid=uid
             registered=True
         except Exception as e:
             return render_template("register.html",errors=e)
@@ -70,19 +92,23 @@ def register():
     else:
         return render_template("register.html")
 
-@app.route("/user/<int:userid>")
+@app.route("/user/<string:userid>")
 def user(userid):
+    print("userid from url",userid)
     # get user data
     conn=sqlite3.connect("store.db")
     cur=conn.cursor()
-    SQL=f'SELECT username, adress FROM users WHERE rowid='+str(userid)
+    SQL=f'SELECT username, adress FROM users WHERE id="{userid}"'
     userdata=cur.execute(SQL).fetchone()
 
+    print(userdata[1])
+    
+
     #get products
-    SQL=f'SELECT name,price,image FROM purchases INNER JOIN products ON purchases.product_id=products.rowid WHERE purchases.username_id={userid}'
+    SQL=f'SELECT name,price,image FROM purchases INNER JOIN products ON purchases.product_id=products.rowid WHERE purchases.username_id="{userid}"'
     prod=cur.execute(SQL).fetchall()
     print("products",prod)
-    return render_template("user.html", userdata={"username":userdata[0],"adress":userdata[1],"products":prod})
+    return render_template("user.html", userdata={"username":userdata[0],"adress":cipher_suite.decrypt(bytes(userdata[1],"utf-8")).decode(),"products":prod})
 
 if __name__ == "__main__":
-  app.run(debug=True,host="0.0.0.0")
+  app.run(debug=False,host="0.0.0.0")
