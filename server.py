@@ -27,12 +27,15 @@ def login():
         # " OR "1"="1"; DROP TABLE users;
         SQL=f'SELECT rowid,username, password FROM users WHERE username="{username}" AND password="{password}"'
         print(SQL)
+        #print(username,password)
+        
         try:
-            res=cur. executescript(SQL).fetchone()
+            res=cur.execute(SQL).fetchone()
         except Exception as e:
             return render_template("login.html",errors=e)
+        print("res",res)
         if res:
-           print("USER", res[0])
+           #print("USER", res[0])
            logged=True
         else:
             return render_template("login.html",errors="El usuario no existe o la contraseña no coincide ")
