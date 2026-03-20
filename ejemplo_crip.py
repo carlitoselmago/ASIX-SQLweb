@@ -2,8 +2,8 @@ from cryptography.fernet import Fernet
 
 # Generar una clau
 key = Fernet.generate_key()
-# hola sjsj
-print("MI KEY ES",key) 
+
+print("MI KEY ES",key)
 
 """
 cipher_suite = Fernet(key)
